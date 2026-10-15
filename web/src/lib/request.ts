@@ -28,6 +28,16 @@ function errorMessageFromValue(value: unknown): string {
     return errorMessageFromValue(item.error);
 }
 
+export class HttpError extends Error {
+    status?: number;
+
+    constructor(message: string, status?: number) {
+        super(message);
+        this.name = "HttpError";
+        this.status = status;
+    }
+}
+
 export const request = axios.create({
     baseURL: webConfig.apiUrl.replace(/\/$/, ""),
 });
@@ -68,7 +78,7 @@ request.interceptors.response.use(
             payload?.message ||
             error.message ||
             `请求失败 (${status || 500})`;
-        return Promise.reject(new Error(message));
+        return Promise.reject(new HttpError(message, status));
     },
 );
 

@@ -36,7 +36,7 @@ import {
   type AccountImportPayload,
   type OAuthLoginStartResponse,
 } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, copyToClipboard } from "@/lib/utils";
 
 type ImportMethod = "menu" | "token" | "session" | "codex-auth" | "account-json" | "oauth";
 
@@ -317,12 +317,8 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       return;
     }
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(oauthSession.authorize_url);
-        toast.success("授权 URL 已复制到剪贴板");
-      } else {
-        toast.error("当前环境不支持自动复制，请手动选择并复制");
-      }
+      await copyToClipboard(oauthSession.authorize_url);
+      toast.success("授权 URL 已复制到剪贴板");
     } catch {
       toast.error("复制失败，请手动选择并复制");
     }

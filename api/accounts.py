@@ -161,12 +161,12 @@ def create_router() -> APIRouter:
     router = APIRouter()
 
     @router.get("/api/auth/users")
-    async def list_user_keys(authorization: str | None = Header(default=None)):
+    def list_user_keys(authorization: str | None = Header(default=None)):
         require_admin(authorization)
         return {"items": auth_service.list_keys(role="user")}
 
     @router.post("/api/auth/users")
-    async def create_user_key(body: UserKeyCreateRequest, authorization: str | None = Header(default=None)):
+    def create_user_key(body: UserKeyCreateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         try:
             item, raw_key = auth_service.create_key(role="user", name=body.name)
@@ -175,7 +175,7 @@ def create_router() -> APIRouter:
         return {"item": item, "key": raw_key, "items": auth_service.list_keys(role="user")}
 
     @router.post("/api/auth/users/{key_id}")
-    async def update_user_key(
+    def update_user_key(
             key_id: str,
             body: UserKeyUpdateRequest,
             authorization: str | None = Header(default=None),
@@ -201,19 +201,19 @@ def create_router() -> APIRouter:
         return {"item": item, "items": auth_service.list_keys(role="user")}
 
     @router.delete("/api/auth/users/{key_id}")
-    async def delete_user_key(key_id: str, authorization: str | None = Header(default=None)):
+    def delete_user_key(key_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         if not auth_service.delete_key(key_id, role="user"):
             raise HTTPException(status_code=404, detail={"error": "这条用户密钥不存在，可能已经被删除"})
         return {"items": auth_service.list_keys(role="user")}
 
     @router.get("/api/accounts")
-    async def get_accounts(authorization: str | None = Header(default=None)):
+    def get_accounts(authorization: str | None = Header(default=None)):
         require_admin(authorization)
         return {"items": account_service.list_accounts()}
 
     @router.post("/api/accounts")
-    async def create_accounts(body: AccountCreateRequest, authorization: str | None = Header(default=None)):
+    def create_accounts(body: AccountCreateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         account_payloads = [item for item in body.accounts if isinstance(item, dict)]
         payload_tokens = [_account_payload_token(item) for item in account_payloads]
@@ -239,7 +239,7 @@ def create_router() -> APIRouter:
         }
 
     @router.delete("/api/accounts")
-    async def delete_accounts(body: AccountDeleteRequest, authorization: str | None = Header(default=None)):
+    def delete_accounts(body: AccountDeleteRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         tokens = [str(token or "").strip() for token in body.tokens if str(token or "").strip()]
         if not tokens:
@@ -268,7 +268,7 @@ def create_router() -> APIRouter:
         return {"progress_id": progress_id}
 
     @router.get("/api/accounts/refresh/progress/{progress_id}")
-    async def get_refresh_progress(progress_id: str, authorization: str | None = Header(default=None)):
+    def get_refresh_progress(progress_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         progress = account_service.get_refresh_progress(progress_id)
         if progress is None:
@@ -296,7 +296,7 @@ def create_router() -> APIRouter:
         return {"progress_id": progress_id}
 
     @router.get("/api/accounts/re-login/progress/{progress_id}")
-    async def get_relogin_progress(progress_id: str, authorization: str | None = Header(default=None)):
+    def get_relogin_progress(progress_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         progress = account_service.get_relogin_progress(progress_id)
         if progress is None:
@@ -304,7 +304,7 @@ def create_router() -> APIRouter:
         return progress
 
     @router.post("/api/accounts/export")
-    async def export_accounts(body: AccountExportRequest, authorization: str | None = Header(default=None)):
+    def export_accounts(body: AccountExportRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         access_tokens = _unique_tokens(body.access_tokens)
         items = account_service.build_export_items(access_tokens)
@@ -331,7 +331,7 @@ def create_router() -> APIRouter:
         )
 
     @router.post("/api/accounts/update")
-    async def update_account(body: AccountUpdateRequest, authorization: str | None = Header(default=None)):
+    def update_account(body: AccountUpdateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         access_token = str(body.access_token or "").strip()
         if not access_token:
@@ -394,12 +394,12 @@ def create_router() -> APIRouter:
         }
 
     @router.get("/api/cpa/pools")
-    async def list_cpa_pools(authorization: str | None = Header(default=None)):
+    def list_cpa_pools(authorization: str | None = Header(default=None)):
         require_admin(authorization)
         return {"pools": sanitize_cpa_pools(cpa_config.list_pools())}
 
     @router.post("/api/cpa/pools")
-    async def create_cpa_pool(body: CPAPoolCreateRequest, authorization: str | None = Header(default=None)):
+    def create_cpa_pool(body: CPAPoolCreateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         if not body.base_url.strip():
             raise HTTPException(status_code=400, detail={"error": "base_url is required"})
@@ -409,7 +409,7 @@ def create_router() -> APIRouter:
         return {"pool": sanitize_cpa_pool(pool), "pools": sanitize_cpa_pools(cpa_config.list_pools())}
 
     @router.post("/api/cpa/pools/{pool_id}")
-    async def update_cpa_pool(pool_id: str, body: CPAPoolUpdateRequest, authorization: str | None = Header(default=None)):
+    def update_cpa_pool(pool_id: str, body: CPAPoolUpdateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         pool = cpa_config.update_pool(pool_id, body.model_dump(exclude_none=True))
         if pool is None:
@@ -417,7 +417,7 @@ def create_router() -> APIRouter:
         return {"pool": sanitize_cpa_pool(pool), "pools": sanitize_cpa_pools(cpa_config.list_pools())}
 
     @router.delete("/api/cpa/pools/{pool_id}")
-    async def delete_cpa_pool(pool_id: str, authorization: str | None = Header(default=None)):
+    def delete_cpa_pool(pool_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         if not cpa_config.delete_pool(pool_id):
             raise HTTPException(status_code=404, detail={"error": "pool not found"})
@@ -432,7 +432,7 @@ def create_router() -> APIRouter:
         return {"pool_id": pool_id, "files": await run_in_threadpool(list_remote_files, pool)}
 
     @router.post("/api/cpa/pools/{pool_id}/import")
-    async def cpa_pool_import(pool_id: str, body: CPAImportRequest, authorization: str | None = Header(default=None)):
+    def cpa_pool_import(pool_id: str, body: CPAImportRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         pool = cpa_config.get_pool(pool_id)
         if pool is None:
@@ -444,7 +444,7 @@ def create_router() -> APIRouter:
         return {"import_job": job}
 
     @router.get("/api/cpa/pools/{pool_id}/import")
-    async def cpa_pool_import_progress(pool_id: str, authorization: str | None = Header(default=None)):
+    def cpa_pool_import_progress(pool_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         pool = cpa_config.get_pool(pool_id)
         if pool is None:
@@ -452,12 +452,12 @@ def create_router() -> APIRouter:
         return {"import_job": pool.get("import_job")}
 
     @router.get("/api/sub2api/servers")
-    async def list_sub2api_servers(authorization: str | None = Header(default=None)):
+    def list_sub2api_servers(authorization: str | None = Header(default=None)):
         require_admin(authorization)
         return {"servers": sanitize_sub2api_servers(sub2api_config.list_servers())}
 
     @router.post("/api/sub2api/servers")
-    async def create_sub2api_server(body: Sub2APIServerCreateRequest, authorization: str | None = Header(default=None)):
+    def create_sub2api_server(body: Sub2APIServerCreateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         if not body.base_url.strip():
             raise HTTPException(status_code=400, detail={"error": "base_url is required"})
@@ -476,7 +476,7 @@ def create_router() -> APIRouter:
         return {"server": sanitize_sub2api_server(server), "servers": sanitize_sub2api_servers(sub2api_config.list_servers())}
 
     @router.post("/api/sub2api/servers/{server_id}")
-    async def update_sub2api_server(server_id: str, body: Sub2APIServerUpdateRequest, authorization: str | None = Header(default=None)):
+    def update_sub2api_server(server_id: str, body: Sub2APIServerUpdateRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         server = sub2api_config.update_server(server_id, body.model_dump(exclude_none=True))
         if server is None:
@@ -484,7 +484,7 @@ def create_router() -> APIRouter:
         return {"server": sanitize_sub2api_server(server), "servers": sanitize_sub2api_servers(sub2api_config.list_servers())}
 
     @router.delete("/api/sub2api/servers/{server_id}")
-    async def delete_sub2api_server(server_id: str, authorization: str | None = Header(default=None)):
+    def delete_sub2api_server(server_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         if not sub2api_config.delete_server(server_id):
             raise HTTPException(status_code=404, detail={"error": "server not found"})
@@ -515,7 +515,7 @@ def create_router() -> APIRouter:
         return {"server_id": server_id, "accounts": accounts}
 
     @router.post("/api/sub2api/servers/{server_id}/import")
-    async def sub2api_server_import(server_id: str, body: Sub2APIImportRequest, authorization: str | None = Header(default=None)):
+    def sub2api_server_import(server_id: str, body: Sub2APIImportRequest, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         server = sub2api_config.get_server(server_id)
         if server is None:
@@ -527,7 +527,7 @@ def create_router() -> APIRouter:
         return {"import_job": job}
 
     @router.get("/api/sub2api/servers/{server_id}/import")
-    async def sub2api_server_import_progress(server_id: str, authorization: str | None = Header(default=None)):
+    def sub2api_server_import_progress(server_id: str, authorization: str | None = Header(default=None)):
         require_admin(authorization)
         server = sub2api_config.get_server(server_id)
         if server is None:

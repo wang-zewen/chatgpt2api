@@ -59,7 +59,7 @@ import {
   type RefreshProgressResponse,
 } from "@/lib/api";
 import { useAuthGuard } from "@/lib/use-auth-guard";
-import { cn } from "@/lib/utils";
+import { cn, copyToClipboard } from "@/lib/utils";
 
 import { AccountImportDialog } from "./components/account-import-dialog";
 
@@ -881,8 +881,10 @@ function AccountsPageContent() {
                     type="button"
                     className="inline-flex cursor-pointer items-center rounded-full border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-50"
                     onClick={() => {
-                      void navigator.clipboard.writeText(model.id);
-                      toast.success("模型名已复制");
+                      void copyToClipboard(model.id).then(
+                        () => toast.success("模型名已复制"),
+                        () => toast.error("复制失败，请手动复制"),
+                      );
                     }}
                     title={`点击复制 ${model.id}`}
                   >
@@ -1089,8 +1091,10 @@ function AccountsPageContent() {
                               type="button"
                               className="rounded-lg p-1 text-stone-400 transition hover:bg-stone-100 hover:text-stone-700"
                               onClick={() => {
-                                void navigator.clipboard.writeText(account.access_token);
-                                toast.success("token 已复制");
+                                void copyToClipboard(account.access_token).then(
+                                  () => toast.success("token 已复制"),
+                                  () => toast.error("复制失败，请手动复制"),
+                                );
                               }}
                             >
                               <Copy className="size-4" />

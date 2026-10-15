@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import webConfig from "@/constants/common-env";
 import { fetchSettingsConfig } from "@/lib/api";
 import { getStoredAuthSession } from "@/store/auth";
+import { copyToClipboard } from "@/lib/utils";
 
 export function SkillPanel() {
   const [browserBaseUrl, setBrowserBaseUrl] = useState("");
@@ -121,8 +122,12 @@ ${skillEn}
 \`\`\``, [skillEn]);
 
   const copyText = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    toast.success("已复制");
+    try {
+      await copyToClipboard(text);
+      toast.success("已复制");
+    } catch {
+      toast.error("复制失败，请手动复制");
+    }
   };
 
   const downloadSkill = (text: string) => {
